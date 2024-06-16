@@ -1,6 +1,15 @@
 <?php
 include_once("simple_html_dom.php");
 
+!defined('BASE_URL') && define('BASE_URL', 'https://www.tradingview.com/markets/');
+
+function pr($arr)
+{
+	echo "<pre>";
+	print_r($arr);
+	echo "</pre>";
+}
+
 function getHtmlFromUrl($url)
 {
 	// initialize a cURL session
@@ -28,7 +37,7 @@ function getHtmlFromUrl($url)
 
 function getWorldStockArray($stockCat)
 {
-	$html = getHtmlFromUrl("https://www.tradingview.com/markets/world-stocks/$stockCat/");
+	$html = getHtmlFromUrl(BASE_URL . "world-stocks/$stockCat/");
 	$table = $html->find(".table-Ngq2xrcG tbody", 0);
 	$outputArr = [];
 	for ($x = 0; $x <= 100; $x++) {
@@ -117,7 +126,7 @@ function getWorldStockArray($stockCat)
 
 function getCountryStockArray($stockCat, $countryParam)
 {
-	$html = getHtmlFromUrl("https://www.tradingview.com/markets/$countryParam/$stockCat/");
+	$html = getHtmlFromUrl(BASE_URL . "$countryParam/$stockCat/");
 	$table = $html->find(".table-Ngq2xrcG tbody", 0);
 
 	$outputArr = [];
@@ -229,5 +238,24 @@ function getCountryStockArray($stockCat, $countryParam)
 	}
 
 
+	return $outputArr;
+}
+
+
+function getEftStocks($eftUrl, $colArr, $totCol)
+{
+	$html = getHtmlFromUrl(BASE_URL . "etfs/" . $eftUrl);
+	$table = $html->find(".table-Ngq2xrcG tbody", 0);
+
+	$outputArr = [];
+	for ($x = 0; $x <= 100; $x++) {
+		$tableTrData = $table->find(".row-RdUXZpkv tr:nth-child($x)", $x);
+		if ($tableTrData) {
+			for ($i = 0; $i < $totCol; $i++) {
+				$td = ($i == 0) ? $tableTrData->find("td:nth-child(1) span sup", $i)->plaintext : $tableTrData->find("td", $i)->plaintext;
+				$outputArr[$x][$colArr[$i]] = $td;
+			}
+		}
+	}
 	return $outputArr;
 }
